@@ -39,6 +39,9 @@ _install = tag_class(
         "fetch_javadoc": attr.bool(default = False),
         "fetch_sources": attr.bool(default = True),
 
+        # How do we fetch?
+        "use_credentials_from_home_netrc_file": attr.bool(default = True, doc = "Whether to include coursier credentials gathered from the user home ~/.netrc file"),
+
         # Controlling visibility
         "strict_visibility": attr.bool(
             doc = """Controls visibility of transitive dependencies.
@@ -164,6 +167,7 @@ def _maven_impl(mctx):
     # - strict_visibility_value: a string list. Build will fail is duplicated and different.
     # - use_starlark_android_rules: bool. A logical OR over all `use_starlark_android_rules` for all `install` tags with the same name.
     # - version_conflict_policy: string. Fails build if different and not a default.
+    # - use_credentials_from_home_netrc_file: bool. A logical OR over all `use_credentials_from_home_netrc_file` for all `install` tags with the same name.
 
     # Mapping of `name`s to `bazel_module.name` This will allow us to warn users when more than
     # module attempts to update a maven repo (which is normally undesired behaviour)
@@ -245,6 +249,7 @@ def _maven_impl(mctx):
             _logical_or(repo, "generate_compat_repositories", False, install.generate_compat_repositories)
             _logical_or(repo, "strict_visibility", False, install.strict_visibility)
             _logical_or(repo, "use_starlark_android_rules", False, install.use_starlark_android_rules)
+            _logical_or(repo, "use_credentials_from_home_netrc_file", False, install.use_credentials_from_home_netrc_file)
 
             repo["version_conflict_policy"] = _fail_if_different(
                 "version_conflict_policy",
@@ -314,6 +319,7 @@ def _maven_impl(mctx):
             use_starlark_android_rules = repo.get("use_starlark_android_rules"),
             aar_import_bzl_label = repo.get("aar_import_bzl_label"),
             duplicate_version_warning = repo.get("duplicate_version_warning"),
+            use_credentials_from_home_netrc_file = repo.get("use_credentials_from_home_netrc_file"),
         )
 
         if repo.get("generate_compat_repositories"):
